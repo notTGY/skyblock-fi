@@ -1,5 +1,5 @@
-import { sql } from "@/lib/db"
-import { NextResponse } from "next/server"
+import { NextResponse } from "next/server";
+import { sql } from "@/lib/db";
 
 export async function GET() {
   try {
@@ -20,28 +20,34 @@ export async function GET() {
       LEFT JOIN labels l ON il.label_id = l.id
       GROUP BY i.id
       ORDER BY i.name
-    `
+    `;
 
-    return NextResponse.json(items)
+    return NextResponse.json(items);
   } catch (error) {
-    console.error("[v0] Error fetching items:", error)
-    return NextResponse.json({ error: "Failed to fetch items" }, { status: 500 })
+    console.error("[v0] Error fetching items:", error);
+    return NextResponse.json(
+      { error: "Failed to fetch items" },
+      { status: 500 },
+    );
   }
 }
 
 export async function POST(request: Request) {
   try {
-    const { id, name } = await request.json()
+    const { id, name } = await request.json();
 
     await sql`
       INSERT INTO items (id, name)
       VALUES (${id}, ${name})
       ON CONFLICT (id) DO UPDATE SET name = ${name}
-    `
+    `;
 
-    return NextResponse.json({ success: true })
+    return NextResponse.json({ success: true });
   } catch (error) {
-    console.error("[v0] Error creating item:", error)
-    return NextResponse.json({ error: "Failed to create item" }, { status: 500 })
+    console.error("[v0] Error creating item:", error);
+    return NextResponse.json(
+      { error: "Failed to create item" },
+      { status: 500 },
+    );
   }
 }

@@ -1,14 +1,14 @@
-import { sql } from "@/lib/db"
-import { NextResponse } from "next/server"
+import { NextResponse } from "next/server";
+import { sql } from "@/lib/db";
 
 export async function GET(request: Request) {
   try {
-    const { searchParams } = new URL(request.url)
-    const itemId = searchParams.get("itemId")
-    const hours = Number.parseInt(searchParams.get("hours") || "24")
+    const { searchParams } = new URL(request.url);
+    const itemId = searchParams.get("itemId");
+    const hours = Number.parseInt(searchParams.get("hours") || "24");
 
     if (!itemId) {
-      return NextResponse.json({ error: "itemId required" }, { status: 400 })
+      return NextResponse.json({ error: "itemId required" }, { status: 400 });
     }
 
     const prices = await sql`
@@ -25,18 +25,21 @@ export async function GET(request: Request) {
         AND timestamp >= datetime('now', '-${hours} hours')
       ORDER BY timestamp DESC
       LIMIT 1000
-    `
+    `;
 
-    return NextResponse.json(prices)
+    return NextResponse.json(prices);
   } catch (error) {
-    console.error("[v0] Error fetching prices:", error)
-    return NextResponse.json({ error: "Failed to fetch prices" }, { status: 500 })
+    console.error("[v0] Error fetching prices:", error);
+    return NextResponse.json(
+      { error: "Failed to fetch prices" },
+      { status: 500 },
+    );
   }
 }
 
 export async function POST(request: Request) {
   try {
-    const data = await request.json()
+    const data = await request.json();
 
     await sql`
       INSERT INTO price_history (
@@ -47,11 +50,14 @@ export async function POST(request: Request) {
         ${data.itemId}, ${data.buyPrice}, ${data.sellPrice},
         ${data.buyOrders}, ${data.sellOrders}, ${data.buyVolume}, ${data.sellVolume}
       )
-    `
+    `;
 
-    return NextResponse.json({ success: true })
+    return NextResponse.json({ success: true });
   } catch (error) {
-    console.error("[v0] Error saving price:", error)
-    return NextResponse.json({ error: "Failed to save price" }, { status: 500 })
+    console.error("[v0] Error saving price:", error);
+    return NextResponse.json(
+      { error: "Failed to save price" },
+      { status: 500 },
+    );
   }
 }

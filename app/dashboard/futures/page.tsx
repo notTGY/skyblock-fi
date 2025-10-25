@@ -1,6 +1,6 @@
-import { NavHeader } from "@/components/nav-header"
-import { DashboardSidebar } from "@/components/dashboard-sidebar"
-import { Card } from "@/components/ui/card"
+import { DashboardSidebar } from "@/components/dashboard-sidebar";
+import { NavHeader } from "@/components/nav-header";
+import { Card } from "@/components/ui/card";
 
 export default function FuturesPage() {
   return (
@@ -11,13 +11,17 @@ export default function FuturesPage() {
         <main className="flex-1 p-3">
           <div className="mb-3">
             <h1 className="text-lg font-bold mb-1">Futures Trading</h1>
-            <p className="text-[10px] text-muted-foreground">Derivative contracts and forward pricing</p>
+            <p className="text-[10px] text-muted-foreground">
+              Derivative contracts and forward pricing
+            </p>
           </div>
           <Card className="p-8 text-center">
-            <p className="text-sm text-muted-foreground">Futures trading coming soon</p>
+            <p className="text-sm text-muted-foreground">
+              Futures trading coming soon
+            </p>
           </Card>
         </main>
       </div>
     </div>
-  )
+  );
 }

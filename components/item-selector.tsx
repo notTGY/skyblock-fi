@@ -1,27 +1,42 @@
-"use client"
+"use client";
 
-import { useState } from "react"
-import { Check, ChevronsUpDown } from "lucide-react"
-import { Button } from "@/components/ui/button"
-import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from "@/components/ui/command"
-import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover"
-import { cn } from "@/lib/utils"
+import { Check, ChevronsUpDown } from "lucide-react";
+import { useState } from "react";
+import { Button } from "@/components/ui/button";
+import {
+  Command,
+  CommandEmpty,
+  CommandGroup,
+  CommandInput,
+  CommandItem,
+  CommandList,
+} from "@/components/ui/command";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
+import { cn } from "@/lib/utils";
 
 interface Item {
-  id: string
-  name: string
+  id: string;
+  name: string;
 }
 
 interface ItemSelectorProps {
-  items: Item[]
-  selectedItem: string | null
-  onSelectItem: (itemId: string) => void
+  items: Item[];
+  selectedItem: string | null;
+  onSelectItem: (itemId: string) => void;
 }
 
-export function ItemSelector({ items, selectedItem, onSelectItem }: ItemSelectorProps) {
-  const [open, setOpen] = useState(false)
+export function ItemSelector({
+  items,
+  selectedItem,
+  onSelectItem,
+}: ItemSelectorProps) {
+  const [open, setOpen] = useState(false);
 
-  const selected = items.find((item) => item.id === selectedItem)
+  const selected = items.find((item) => item.id === selectedItem);
 
   return (
     <Popover open={open} onOpenChange={setOpen}>
@@ -47,12 +62,17 @@ export function ItemSelector({ items, selectedItem, onSelectItem }: ItemSelector
                   key={item.id}
                   value={item.name}
                   onSelect={() => {
-                    onSelectItem(item.id)
-                    setOpen(false)
+                    onSelectItem(item.id);
+                    setOpen(false);
                   }}
                   className="text-xs"
                 >
-                  <Check className={cn("mr-2 h-3 w-3", selectedItem === item.id ? "opacity-100" : "opacity-0")} />
+                  <Check
+                    className={cn(
+                      "mr-2 h-3 w-3",
+                      selectedItem === item.id ? "opacity-100" : "opacity-0",
+                    )}
+                  />
                   {item.name}
                 </CommandItem>
               ))}
@@ -61,5 +81,5 @@ export function ItemSelector({ items, selectedItem, onSelectItem }: ItemSelector
         </Command>
       </PopoverContent>
     </Popover>
-  )
+  );
 }
