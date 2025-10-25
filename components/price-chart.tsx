@@ -79,28 +79,12 @@ export function PriceChart({ data, title }: PriceChartProps) {
         >
           <defs>
             <linearGradient id="colorBuy" x1="0" y1="0" x2="0" y2="1">
-              <stop
-                offset="5%"
-                stopColor="hsl(var(--chart-1))"
-                stopOpacity={0.3}
-              />
-              <stop
-                offset="95%"
-                stopColor="hsl(var(--chart-1))"
-                stopOpacity={0}
-              />
+              <stop offset="5%" stopColor="#4A9EFF" stopOpacity={0.3} />
+              <stop offset="95%" stopColor="#4A9EFF" stopOpacity={0} />
             </linearGradient>
             <linearGradient id="colorSell" x1="0" y1="0" x2="0" y2="1">
-              <stop
-                offset="5%"
-                stopColor="hsl(var(--chart-2))"
-                stopOpacity={0.3}
-              />
-              <stop
-                offset="95%"
-                stopColor="hsl(var(--chart-2))"
-                stopOpacity={0}
-              />
+              <stop offset="5%" stopColor="#00BFAE" stopOpacity={0.3} />
+              <stop offset="95%" stopColor="#00BFAE" stopOpacity={0} />
             </linearGradient>
           </defs>
           <CartesianGrid
@@ -122,7 +106,7 @@ export function PriceChart({ data, title }: PriceChartProps) {
           <Area
             type="monotone"
             dataKey="buy"
-            stroke="hsl(var(--chart-1))"
+            stroke="#4A9EFF"
             fillOpacity={1}
             fill="url(#colorBuy)"
             strokeWidth={1.5}
@@ -130,7 +114,7 @@ export function PriceChart({ data, title }: PriceChartProps) {
           <Area
             type="monotone"
             dataKey="sell"
-            stroke="hsl(var(--chart-2))"
+            stroke="#00BFAE"
             fillOpacity={1}
             fill="url(#colorSell)"
             strokeWidth={1.5}

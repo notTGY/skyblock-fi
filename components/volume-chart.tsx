@@ -90,16 +90,8 @@ export function VolumeChart({ data, title }: VolumeChartProps) {
             width={40}
           />
           <Tooltip content={<CustomTooltip />} />
-          <Bar
-            dataKey="buyVol"
-            fill="hsl(var(--chart-3))"
-            radius={[2, 2, 0, 0]}
-          />
-          <Bar
-            dataKey="sellVol"
-            fill="hsl(var(--chart-5))"
-            radius={[2, 2, 0, 0]}
-          />
+          <Bar dataKey="buyVol" fill="#FFD700" radius={[2, 2, 0, 0]} />
+          <Bar dataKey="sellVol" fill="#FF69B4" radius={[2, 2, 0, 0]} />
         </BarChart>
       </ResponsiveContainer>
       <div className="flex gap-4 mt-2 text-[10px]">

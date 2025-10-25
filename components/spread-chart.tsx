@@ -93,7 +93,7 @@ export function SpreadChart({ data, title }: SpreadChartProps) {
           <Line
             type="monotone"
             dataKey="spread"
-            stroke="hsl(var(--chart-4))"
+            stroke="#8A2BE2"
             strokeWidth={2}
             dot={false}
           />
