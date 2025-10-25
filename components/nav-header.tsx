@@ -1,8 +1,12 @@
 import { BarChart3, BookOpen } from "lucide-react";
 import Link from "next/link";
+import { useRefetchInterval } from "@/app/providers";
+import { RefetchIntervalSelector } from "@/components/refetch-interval-selector";
 import { Kbd } from "@/components/ui/kbd";
 
 export function NavHeader() {
+  const { refetchInterval, setRefetchInterval } = useRefetchInterval();
+
   return (
     <header className="border-b border-border bg-card">
       <div className="flex h-10 items-center justify-between px-4">
@@ -17,6 +21,10 @@ export function NavHeader() {
             <div className="w-2 h-2 bg-chart-2 rounded-full animate-pulse"></div>
             <span className="text-muted-foreground">MARKET LIVE</span>
           </div>
+          <RefetchIntervalSelector
+            value={refetchInterval}
+            onChange={setRefetchInterval}
+          />
           <nav className="flex gap-1 text-xs">
             <Link
               href="/"

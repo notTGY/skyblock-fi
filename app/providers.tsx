@@ -1,7 +1,19 @@
 "use client";
 
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { useState } from "react";
+import { createContext, useContext, useState } from "react";
+
+const RefetchContext = createContext<{
+  refetchInterval: number;
+  setRefetchInterval: (interval: number) => void;
+}>({
+  refetchInterval: 60 * 1000,
+  setRefetchInterval: () => {},
+});
+
+export function useRefetchInterval() {
+  return useContext(RefetchContext);
+}
 
 export function Providers({ children }: { children: React.ReactNode }) {
   const [queryClient] = useState(
@@ -16,7 +28,11 @@ export function Providers({ children }: { children: React.ReactNode }) {
       }),
   );
 
+  const [refetchInterval, setRefetchInterval] = useState(60 * 1000); // 1 minute default
+
   return (
-    <QueryClientProvider client={queryClient}>{children}</QueryClientProvider>
+    <RefetchContext.Provider value={{ refetchInterval, setRefetchInterval }}>
+      <QueryClientProvider client={queryClient}>{children}</QueryClientProvider>
+    </RefetchContext.Provider>
   );
 }
