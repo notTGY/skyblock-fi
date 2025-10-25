@@ -443,7 +443,7 @@ export default function ItemDashboardPage() {
                         </div>
                         <div
                           className={
-                            i % 2 === 0 ? "text-chart-3" : "text-destructive"
+                            i % 2 === 0 ? "text-green-500" : "text-destructive"
                           }
                         >
                           {i % 2 === 0 ? "BUY" : "SELL"}
