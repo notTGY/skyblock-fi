@@ -55,13 +55,15 @@ export function LabelManager({
           style={{ borderColor: label.color, color: label.color }}
         >
           {label.name}
-          <button
+          <Button
             onClick={() => onRemoveLabel(label.id)}
-            className="hover:bg-secondary rounded-sm p-0.5 transition-colors"
+            variant="ghost"
+            size="sm"
+            className="h-4 w-4 p-0 hover:bg-secondary/50"
             type="button"
           >
             <X className="h-2.5 w-2.5" />
-          </button>
+          </Button>
         </Badge>
       ))}
 

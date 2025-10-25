@@ -21,6 +21,7 @@ import {
   EmptyHeader,
   EmptyTitle,
 } from "@/components/ui/empty";
+import { Input } from "@/components/ui/input";
 import { Kbd } from "@/components/ui/kbd";
 import {
   Table,
@@ -122,13 +123,13 @@ export default function DashboardPage() {
           </div>
 
           <div className="mb-2">
-            <input
+            <Input
               type="text"
               placeholder="Search items..."
               value={search}
               onChange={(e) => setSearch(e.target.value)}
-              className="w-full p-2 border rounded text-xs bg-background"
-		autoFocus
+              className="h-8 text-xs"
+              autoFocus
             />
           </div>
 
