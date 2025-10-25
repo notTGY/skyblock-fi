@@ -1,7 +1,38 @@
+"use client";
+
+import { useRouter } from "next/navigation";
+import { useEffect } from "react";
 import { NavHeader } from "@/components/nav-header";
 import { Card } from "@/components/ui/card";
 
 export default function HomePage() {
+  const router = useRouter();
+
+  useEffect(() => {
+    const handleKeyDown = (event: KeyboardEvent) => {
+      // Ignore if typing in input or textarea
+      if (
+        event.target instanceof HTMLInputElement ||
+        event.target instanceof HTMLTextAreaElement
+      ) {
+        return;
+      }
+
+      const key = event.key;
+      switch (key) {
+        case "d":
+          event.preventDefault();
+          router.push("/dashboard");
+          break;
+        default:
+          return;
+      }
+    };
+
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, [router]);
+
   return (
     <div className="min-h-screen">
       <NavHeader />

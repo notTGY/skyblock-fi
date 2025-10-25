@@ -1,5 +1,6 @@
 import { BarChart3, BookOpen } from "lucide-react";
 import Link from "next/link";
+import { Kbd } from "@/components/ui/kbd";
 
 export function NavHeader() {
   return (
@@ -19,17 +20,19 @@ export function NavHeader() {
           <nav className="flex gap-1 text-xs">
             <Link
               href="/"
-              className="px-2 py-1 rounded hover:bg-secondary transition-colors"
+              className="px-2 py-1 rounded hover:bg-secondary transition-colors flex items-center gap-1"
             >
-              <BookOpen className="inline h-3 w-3 mr-1" />
+              <BookOpen className="inline h-3 w-3" />
               INFO
+              <Kbd className="text-[8px] h-4 px-1">i</Kbd>
             </Link>
             <Link
               href="/dashboard"
-              className="px-2 py-1 rounded hover:bg-secondary transition-colors"
+              className="px-2 py-1 rounded hover:bg-secondary transition-colors flex items-center gap-1"
             >
-              <BarChart3 className="inline h-3 w-3 mr-1" />
+              <BarChart3 className="inline h-3 w-3" />
               DASHBOARD
+              <Kbd className="text-[8px] h-4 px-1">d</Kbd>
             </Link>
           </nav>
         </div>

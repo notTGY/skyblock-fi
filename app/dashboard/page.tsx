@@ -1,5 +1,6 @@
 "use client";
 
+import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import { DashboardSidebar } from "@/components/dashboard-sidebar";
 import { ItemSelector } from "@/components/item-selector";
@@ -9,6 +10,15 @@ import { PriceChart } from "@/components/price-chart";
 import { SpreadChart } from "@/components/spread-chart";
 import { StatCard } from "@/components/stat-card";
 import { Card } from "@/components/ui/card";
+import {
+  CommandDialog,
+  CommandEmpty,
+  CommandGroup,
+  CommandInput,
+  CommandItem,
+  CommandList,
+} from "@/components/ui/command";
+import { Kbd } from "@/components/ui/kbd";
 import { VolumeChart } from "@/components/volume-chart";
 
 interface Label {
@@ -39,6 +49,9 @@ export default function DashboardPage() {
   const [priceData, setPriceData] = useState<PriceData[]>([]);
   const [availableLabels, setAvailableLabels] = useState<Label[]>([]);
   const [_loading, setLoading] = useState(false);
+  const [commandOpen, setCommandOpen] = useState(false);
+  const [itemsLoading, setItemsLoading] = useState(true);
+  const router = useRouter();
 
   // Fetch real data from APIs
   useEffect(() => {
@@ -59,6 +72,7 @@ export default function DashboardPage() {
           }));
           setItems(fetchedItems);
         }
+        setItemsLoading(false);
 
         // Fetch labels
         const labelsResponse = await fetch("/api/labels");
@@ -70,11 +84,45 @@ export default function DashboardPage() {
         }
       } catch (error) {
         console.error("Error fetching data:", error);
+        setItemsLoading(false);
       }
     };
 
     fetchData();
   }, []);
+
+  useEffect(() => {
+    const handleKeyDown = (event: KeyboardEvent) => {
+      // Ignore if typing in input or textarea
+      if (
+        event.target instanceof HTMLInputElement ||
+        event.target instanceof HTMLTextAreaElement
+      ) {
+        return;
+      }
+
+      const key = event.key;
+      switch (key) {
+        case "1":
+          event.preventDefault();
+          router.push("/dashboard");
+          break;
+        case "i":
+          event.preventDefault();
+          router.push("/");
+          break;
+        case "k":
+          event.preventDefault();
+          setCommandOpen(true);
+          break;
+        default:
+          return;
+      }
+    };
+
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, [router]);
 
   useEffect(() => {
     if (selectedItem) {
@@ -203,6 +251,7 @@ export default function DashboardPage() {
               items={items}
               selectedItem={selectedItem}
               onSelectItem={setSelectedItem}
+              loading={itemsLoading}
             />
           </div>
 
@@ -399,6 +448,45 @@ export default function DashboardPage() {
           )}
         </main>
       </div>
+      <CommandDialog open={commandOpen} onOpenChange={setCommandOpen}>
+        <CommandInput placeholder="Type a command or search..." />
+        <CommandList>
+          <CommandEmpty>No results found.</CommandEmpty>
+          <CommandGroup heading="Navigation">
+            <CommandItem
+              onSelect={() => {
+                router.push("/");
+                setCommandOpen(false);
+              }}
+            >
+              Info
+              <Kbd className="ml-auto">i</Kbd>
+            </CommandItem>
+            <CommandItem
+              onSelect={() => {
+                router.push("/dashboard");
+                setCommandOpen(false);
+              }}
+            >
+              Bazaar
+              <Kbd className="ml-auto">1</Kbd>
+            </CommandItem>
+          </CommandGroup>
+          <CommandGroup heading="Items">
+            {items.map((item) => (
+              <CommandItem
+                key={item.id}
+                onSelect={() => {
+                  setSelectedItem(item.id);
+                  setCommandOpen(false);
+                }}
+              >
+                {item.name}
+              </CommandItem>
+            ))}
+          </CommandGroup>
+        </CommandList>
+      </CommandDialog>
     </div>
   );
 }

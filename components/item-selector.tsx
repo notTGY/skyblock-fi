@@ -27,12 +27,14 @@ interface ItemSelectorProps {
   items: Item[];
   selectedItem: string | null;
   onSelectItem: (itemId: string) => void;
+  loading?: boolean;
 }
 
 export function ItemSelector({
   items,
   selectedItem,
   onSelectItem,
+  loading = false,
 }: ItemSelectorProps) {
   const [open, setOpen] = useState(false);
 
@@ -46,8 +48,13 @@ export function ItemSelector({
           role="combobox"
           aria-expanded={open}
           className="w-full justify-between text-xs h-8 font-mono bg-transparent"
+          disabled={loading}
         >
-          {selected ? selected.name : "Select item..."}
+          {loading
+            ? "Loading items..."
+            : selected
+              ? selected.name
+              : "Select item..."}
           <ChevronsUpDown className="ml-2 h-3 w-3 shrink-0 opacity-50" />
         </Button>
       </PopoverTrigger>
@@ -55,7 +62,9 @@ export function ItemSelector({
         <Command>
           <CommandInput placeholder="Search items..." className="h-8 text-xs" />
           <CommandList>
-            <CommandEmpty className="text-xs p-2">No item found.</CommandEmpty>
+            <CommandEmpty className="text-xs p-2">
+              {loading ? "Loading items..." : "No item found."}
+            </CommandEmpty>
             <CommandGroup>
               {items.map((item) => (
                 <CommandItem

@@ -1,15 +1,13 @@
 "use client";
 
-import { BarChart3, Coins, Package, TrendingUp } from "lucide-react";
+import { BarChart3 } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { Kbd } from "@/components/ui/kbd";
 import { cn } from "@/lib/utils";
 
 const instruments = [
-  { name: "Bazaar", icon: BarChart3, href: "/dashboard" },
-  { name: "Futures", icon: TrendingUp, href: "/dashboard/futures" },
-  { name: "Inventory", icon: Package, href: "/dashboard/inventory" },
-  { name: "Portfolio", icon: Coins, href: "/dashboard/portfolio" },
+  { name: "Bazaar", icon: BarChart3, href: "/dashboard", hotkey: "1" },
 ];
 
 export function DashboardSidebar() {
@@ -38,7 +36,8 @@ export function DashboardSidebar() {
               )}
             >
               <Icon className="h-3 w-3" />
-              {item.name}
+              <span className="flex-1">{item.name}</span>
+              <Kbd className="text-[8px] h-4 px-1">{item.hotkey}</Kbd>
             </Link>
           );
         })}
@@ -46,6 +45,9 @@ export function DashboardSidebar() {
       <div className="p-2 border-t border-sidebar-border text-[9px] text-muted-foreground">
         <div>v1.0.0</div>
         <div className="mt-0.5">Data: Live</div>
+        <div className="mt-0.5 flex items-center gap-1">
+          Cmd: <Kbd className="text-[8px] h-4 px-1">k</Kbd>
+        </div>
       </div>
     </aside>
   );
