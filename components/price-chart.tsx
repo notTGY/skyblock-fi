@@ -1,15 +1,13 @@
 "use client";
 
-import { useMemo } from "react";
 import {
-  Area,
-  AreaChart,
-  CartesianGrid,
-  ResponsiveContainer,
-  Tooltip,
-  XAxis,
-  YAxis,
-} from "recharts";
+  AreaSeries,
+  createChart,
+  type IChartApi,
+  type ISeriesApi,
+  type UTCTimestamp,
+} from "lightweight-charts";
+import { useEffect, useMemo, useRef } from "react";
 import { Card } from "@/components/ui/card";
 
 interface PriceData {
@@ -23,102 +21,99 @@ interface PriceChartProps {
   title: string;
 }
 
-interface PriceTooltipProps {
-  active?: boolean;
-  payload?: Array<{
-    value: number;
-    payload: {
-      time: string;
-      buy: number;
-      sell: number;
-      spread: number;
-    };
-  }>;
-}
-
 export function PriceChart({ data, title }: PriceChartProps) {
+  const chartContainerRef = useRef<HTMLDivElement>(null);
+  const chartRef = useRef<IChartApi | null>(null);
+  const buySeriesRef = useRef<ISeriesApi<"Area"> | null>(null);
+  const sellSeriesRef = useRef<ISeriesApi<"Area"> | null>(null);
+
   const chartData = useMemo(() => {
     return data.map((d) => ({
-      time: new Date(d.timestamp).toLocaleTimeString([], {
-        hour: "2-digit",
-        minute: "2-digit",
-      }),
+      time: Math.floor(new Date(d.timestamp).getTime() / 1000) as UTCTimestamp,
       buy: d.buy_price,
       sell: d.sell_price,
       spread: d.sell_price - d.buy_price,
     }));
   }, [data]);
 
-  const CustomTooltip = ({ active, payload }: PriceTooltipProps) => {
-    if (active && payload && payload.length) {
-      return (
-        <div className="bg-card border border-border p-2 text-[10px] font-mono">
-          <div className="text-muted-foreground mb-1">
-            {payload[0].payload.time}
-          </div>
-          <div style={{ color: "#4A9EFF" }}>
-            Buy: {payload[0].value.toFixed(2)}
-          </div>
-          <div style={{ color: "#00BFAE" }}>
-            Sell: {payload[1].value.toFixed(2)}
-          </div>
-          <div className="text-muted-foreground">
-            Spread: {payload[0].payload.spread.toFixed(2)}
-          </div>
-        </div>
-      );
+  useEffect(() => {
+    if (!chartContainerRef.current) return;
+
+    const chart = createChart(chartContainerRef.current, {
+      layout: {
+        background: { color: "transparent" },
+        textColor: "#9CA3AF",
+        attributionLogo: false,
+      },
+      grid: {
+        vertLines: { color: "#3F3F46", style: 1 },
+        horzLines: { color: "#3F3F46", style: 1 },
+      },
+      width: chartContainerRef.current.clientWidth,
+      height: 200,
+      timeScale: {
+        timeVisible: true,
+        secondsVisible: false,
+      },
+      rightPriceScale: {
+        borderColor: "#3F3F46",
+      },
+      crosshair: {
+        mode: 1,
+      },
+    });
+
+    const buySeries = chart.addSeries(AreaSeries, {
+      topColor: "rgba(74, 158, 255, 0.56)",
+      bottomColor: "rgba(74, 158, 255, 0.04)",
+      lineColor: "#4A9EFF",
+      lineWidth: 2,
+    });
+
+    const sellSeries = chart.addSeries(AreaSeries, {
+      topColor: "rgba(0, 191, 174, 0.56)",
+      bottomColor: "rgba(0, 191, 174, 0.04)",
+      lineColor: "#00BFAE",
+      lineWidth: 2,
+    });
+
+    chartRef.current = chart;
+    buySeriesRef.current = buySeries;
+    sellSeriesRef.current = sellSeries;
+
+    const handleResize = () => {
+      if (chartContainerRef.current) {
+        chart.applyOptions({ width: chartContainerRef.current.clientWidth });
+      }
+    };
+
+    window.addEventListener("resize", handleResize);
+
+    return () => {
+      window.removeEventListener("resize", handleResize);
+      chart.remove();
+    };
+  }, []);
+
+  useEffect(() => {
+    if (buySeriesRef.current && sellSeriesRef.current && chartData.length > 0) {
+      const buyData = chartData.map((d) => ({ time: d.time, value: d.buy }));
+      const sellData = chartData.map((d) => ({ time: d.time, value: d.sell }));
+
+      buySeriesRef.current.setData(buyData);
+      sellSeriesRef.current.setData(sellData);
+
+      // Fit content
+      if (chartRef.current) {
+        chartRef.current.timeScale().fitContent();
+      }
     }
-    return null;
-  };
+  }, [chartData]);
 
   return (
     <Card className="p-3">
       <h3 className="text-xs font-semibold mb-2">{title}</h3>
-      <ResponsiveContainer width="100%" height={200}>
-        <AreaChart
-          data={chartData}
-          margin={{ top: 5, right: 5, left: 0, bottom: 0 }}
-        >
-          <defs>
-            <linearGradient id="colorBuy" x1="0" y1="0" x2="0" y2="1">
-              <stop offset="5%" stopColor="#4A9EFF" stopOpacity={0.3} />
-              <stop offset="95%" stopColor="#4A9EFF" stopOpacity={0} />
-            </linearGradient>
-            <linearGradient id="colorSell" x1="0" y1="0" x2="0" y2="1">
-              <stop offset="5%" stopColor="#00BFAE" stopOpacity={0.3} />
-              <stop offset="95%" stopColor="#00BFAE" stopOpacity={0} />
-            </linearGradient>
-          </defs>
-          <CartesianGrid strokeDasharray="3 3" stroke="#3F3F46" opacity={0.3} />
-          <XAxis
-            dataKey="time"
-            tick={{ fontSize: 9, fill: "#9CA3AF" }}
-            tickLine={false}
-          />
-          <YAxis
-            tick={{ fontSize: 9, fill: "#9CA3AF" }}
-            tickLine={false}
-            width={40}
-          />
-          <Tooltip content={<CustomTooltip />} />
-          <Area
-            type="monotone"
-            dataKey="buy"
-            stroke="#4A9EFF"
-            fillOpacity={1}
-            fill="url(#colorBuy)"
-            strokeWidth={1.5}
-          />
-          <Area
-            type="monotone"
-            dataKey="sell"
-            stroke="#00BFAE"
-            fillOpacity={1}
-            fill="url(#colorSell)"
-            strokeWidth={1.5}
-          />
-        </AreaChart>
-      </ResponsiveContainer>
+      <div ref={chartContainerRef} className="w-full h-[200px]" />
       <div className="flex gap-4 mt-2 text-[10px]">
         <div className="flex items-center gap-1.5">
           <div className="w-2 h-2 rounded-full bg-[#4A9EFF]" />
