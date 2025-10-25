@@ -23,6 +23,19 @@ interface PriceChartProps {
   title: string;
 }
 
+interface PriceTooltipProps {
+  active?: boolean;
+  payload?: Array<{
+    value: number;
+    payload: {
+      time: string;
+      buy: number;
+      sell: number;
+      spread: number;
+    };
+  }>;
+}
+
 export function PriceChart({ data, title }: PriceChartProps) {
   const chartData = useMemo(() => {
     return data.map((d) => ({
@@ -36,7 +49,7 @@ export function PriceChart({ data, title }: PriceChartProps) {
     }));
   }, [data]);
 
-  const CustomTooltip = ({ active, payload }: Object) => {
+  const CustomTooltip = ({ active, payload }: PriceTooltipProps) => {
     if (active && payload && payload.length) {
       return (
         <div className="bg-card border border-border p-2 text-[10px] font-mono">

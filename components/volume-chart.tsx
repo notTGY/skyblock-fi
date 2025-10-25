@@ -23,6 +23,18 @@ interface VolumeChartProps {
   title: string;
 }
 
+interface VolumeTooltipProps {
+  active?: boolean;
+  payload?: Array<{
+    value: number;
+    payload: {
+      time: string;
+      buyVol: number;
+      sellVol: number;
+    };
+  }>;
+}
+
 export function VolumeChart({ data, title }: VolumeChartProps) {
   const chartData = useMemo(() => {
     return data.map((d) => ({
@@ -35,7 +47,7 @@ export function VolumeChart({ data, title }: VolumeChartProps) {
     }));
   }, [data]);
 
-  const CustomTooltip = ({ active, payload }: any) => {
+  const CustomTooltip = ({ active, payload }: VolumeTooltipProps) => {
     if (active && payload && payload.length) {
       return (
         <div className="bg-card border border-border p-2 text-[10px] font-mono">

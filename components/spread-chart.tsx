@@ -23,6 +23,18 @@ interface SpreadChartProps {
   title: string;
 }
 
+interface SpreadTooltipProps {
+  active?: boolean;
+  payload?: Array<{
+    value: number;
+    payload: {
+      time: string;
+      spread: number;
+      spreadPercent: number;
+    };
+  }>;
+}
+
 export function SpreadChart({ data, title }: SpreadChartProps) {
   const chartData = useMemo(() => {
     return data.map((d) => ({
@@ -35,7 +47,7 @@ export function SpreadChart({ data, title }: SpreadChartProps) {
     }));
   }, [data]);
 
-  const CustomTooltip = ({ active, payload }: Object) => {
+  const CustomTooltip = ({ active, payload }: SpreadTooltipProps) => {
     if (active && payload && payload.length) {
       return (
         <div className="bg-card border border-border p-2 text-[10px] font-mono">
