@@ -1,8 +1,25 @@
-import { neon } from "@neondatabase/serverless";
+import { Database } from "bun:sqlite";
 
-// For SQLite in development, we'll use a simple wrapper
-// In production, you can swap this with actual Neon/Postgres
-const sql = neon(process.env.DATABASE_URL || "");
+const db = new Database("skyblock.db");
+
+function sql(strings: TemplateStringsArray, ...values: unknown[]) {
+  let query = "";
+  for (let i = 0; i < strings.length; i++) {
+    query += strings[i];
+    if (i < values.length) {
+      query += "?";
+    }
+  }
+  const stmt = db.query(query);
+  if (query.trim().toUpperCase().startsWith("SELECT")) {
+    return Promise.resolve(stmt.all(values));
+  } else {
+    stmt.run(values);
+    return Promise.resolve([]);
+  }
+}
+
+sql.unsafe = (query: string) => Promise.resolve(db.exec(query));
 
 export { sql };
 

@@ -21,9 +21,8 @@ export async function POST(request: Request) {
     const { itemId, labelId } = await request.json();
 
     await sql`
-      INSERT INTO item_labels (item_id, label_id)
+      INSERT OR IGNORE INTO item_labels (item_id, label_id)
       VALUES (${itemId}, ${labelId})
-      ON CONFLICT DO NOTHING
     `;
 
     return NextResponse.json({ success: true });

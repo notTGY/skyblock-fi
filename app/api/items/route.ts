@@ -37,9 +37,8 @@ export async function POST(request: Request) {
     const { id, name } = await request.json();
 
     await sql`
-      INSERT INTO items (id, name)
+      INSERT OR REPLACE INTO items (id, name)
       VALUES (${id}, ${name})
-      ON CONFLICT (id) DO UPDATE SET name = ${name}
     `;
 
     return NextResponse.json({ success: true });
