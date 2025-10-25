@@ -10,6 +10,7 @@ import {
   CommandInput,
   CommandItem,
   CommandList,
+  VirtualizedCommandList,
 } from "@/components/ui/command";
 import {
   Popover,
@@ -61,32 +62,61 @@ export function ItemSelector({
       <PopoverContent className="w-[400px] p-0">
         <Command>
           <CommandInput placeholder="Search items..." className="h-8 text-xs" />
-          <CommandList>
-            <CommandEmpty className="text-xs p-2">
-              {loading ? "Loading items..." : "No item found."}
-            </CommandEmpty>
-            <CommandGroup>
-              {items.map((item) => (
-                <CommandItem
-                  key={item.id}
-                  value={item.name}
-                  onSelect={() => {
-                    onSelectItem(item.id);
-                    setOpen(false);
-                  }}
-                  className="text-xs"
-                >
-                  <Check
-                    className={cn(
-                      "mr-2 h-3 w-3",
-                      selectedItem === item.id ? "opacity-100" : "opacity-0",
-                    )}
-                  />
-                  {item.name}
-                </CommandItem>
-              ))}
-            </CommandGroup>
-          </CommandList>
+          {items.length > 50 ? (
+            <VirtualizedCommandList height={300} itemSize={32}>
+              <CommandEmpty className="text-xs p-2">
+                {loading ? "Loading items..." : "No item found."}
+              </CommandEmpty>
+              <CommandGroup>
+                {items.map((item) => (
+                  <CommandItem
+                    key={item.id}
+                    value={item.name}
+                    onSelect={() => {
+                      onSelectItem(item.id);
+                      setOpen(false);
+                    }}
+                    className="text-xs"
+                  >
+                    <Check
+                      className={cn(
+                        "mr-2 h-3 w-3",
+                        selectedItem === item.id ? "opacity-100" : "opacity-0",
+                      )}
+                    />
+                    {item.name}
+                  </CommandItem>
+                ))}
+              </CommandGroup>
+            </VirtualizedCommandList>
+          ) : (
+            <CommandList>
+              <CommandEmpty className="text-xs p-2">
+                {loading ? "Loading items..." : "No item found."}
+              </CommandEmpty>
+              <CommandGroup>
+                {items.map((item) => (
+                  <CommandItem
+                    key={item.id}
+                    value={item.name}
+                    onSelect={() => {
+                      onSelectItem(item.id);
+                      setOpen(false);
+                    }}
+                    className="text-xs"
+                  >
+                    <Check
+                      className={cn(
+                        "mr-2 h-3 w-3",
+                        selectedItem === item.id ? "opacity-100" : "opacity-0",
+                      )}
+                    />
+                    {item.name}
+                  </CommandItem>
+                ))}
+              </CommandGroup>
+            </CommandList>
+          )}
         </Command>
       </PopoverContent>
     </Popover>

@@ -1,3 +1,4 @@
+import { useVirtualizer } from "@tanstack/react-virtual";
 import * as React from "react";
 
 import { cn } from "@/lib/utils";
@@ -105,10 +106,75 @@ const TableCaption = React.forwardRef<
 ));
 TableCaption.displayName = "TableCaption";
 
+interface VirtualizedTableBodyProps
+  extends React.HTMLAttributes<HTMLTableSectionElement> {
+  children: React.ReactNode[];
+  height?: number;
+  itemSize?: number;
+}
+
+const VirtualizedTableBody = React.forwardRef<
+  HTMLTableSectionElement,
+  VirtualizedTableBodyProps
+>(({ children, height = 400, itemSize = 48, className, ...props }, ref) => {
+  const parentRef = React.useRef<HTMLDivElement>(null);
+
+  const virtualizer = useVirtualizer({
+    count: children.length,
+    getScrollElement: () => parentRef.current,
+    estimateSize: () => itemSize,
+  });
+
+  return (
+    <tbody
+      ref={ref}
+      className={cn("[&_tr:last-child]:border-0", className)}
+      {...props}
+    >
+      <tr style={{ height: 0 }}>
+        <td>
+          <div
+            ref={parentRef}
+            style={{
+              height: `${height}px`,
+              overflow: "auto",
+            }}
+          >
+            <div
+              style={{
+                height: `${virtualizer.getTotalSize()}px`,
+                position: "relative",
+              }}
+            >
+              {virtualizer.getVirtualItems().map((virtualItem) => (
+                <div
+                  key={virtualItem.key}
+                  style={{
+                    position: "absolute",
+                    top: 0,
+                    left: 0,
+                    width: "100%",
+                    height: `${virtualItem.size}px`,
+                    transform: `translateY(${virtualItem.start}px)`,
+                  }}
+                >
+                  {children[virtualItem.index]}
+                </div>
+              ))}
+            </div>
+          </div>
+        </td>
+      </tr>
+    </tbody>
+  );
+});
+VirtualizedTableBody.displayName = "VirtualizedTableBody";
+
 export {
   Table,
   TableHeader,
   TableBody,
+  VirtualizedTableBody,
   TableFooter,
   TableHead,
   TableRow,

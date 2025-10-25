@@ -1,8 +1,9 @@
 "use client";
 
+import { useVirtualizer } from "@tanstack/react-virtual";
 import { Command as CommandPrimitive } from "cmdk";
 import { SearchIcon } from "lucide-react";
-import type * as React from "react";
+import * as React from "react";
 import {
   Dialog,
   DialogContent,
@@ -97,6 +98,68 @@ function CommandList({
   );
 }
 
+interface VirtualizedCommandListProps
+  extends React.ComponentProps<typeof CommandPrimitive.List> {
+  children: React.ReactNode[];
+  height?: number;
+  itemSize?: number;
+}
+
+function VirtualizedCommandList({
+  children,
+  height = 300,
+  itemSize = 36,
+  className,
+  ...props
+}: VirtualizedCommandListProps) {
+  const parentRef = React.useRef<HTMLDivElement>(null);
+
+  const virtualizer = useVirtualizer({
+    count: children.length,
+    getScrollElement: () => parentRef.current,
+    estimateSize: () => itemSize,
+  });
+
+  return (
+    <CommandPrimitive.List
+      data-slot="command-list"
+      className={cn("scroll-py-1 overflow-x-hidden", className)}
+      {...props}
+    >
+      <div
+        ref={parentRef}
+        style={{
+          height: `${height}px`,
+          overflow: "auto",
+        }}
+      >
+        <div
+          style={{
+            height: `${virtualizer.getTotalSize()}px`,
+            position: "relative",
+          }}
+        >
+          {virtualizer.getVirtualItems().map((virtualItem) => (
+            <div
+              key={virtualItem.key}
+              style={{
+                position: "absolute",
+                top: 0,
+                left: 0,
+                width: "100%",
+                height: `${virtualItem.size}px`,
+                transform: `translateY(${virtualItem.start}px)`,
+              }}
+            >
+              {children[virtualItem.index]}
+            </div>
+          ))}
+        </div>
+      </div>
+    </CommandPrimitive.List>
+  );
+}
+
 function CommandEmpty({
   ...props
 }: React.ComponentProps<typeof CommandPrimitive.Empty>) {
@@ -175,6 +238,7 @@ export {
   CommandDialog,
   CommandInput,
   CommandList,
+  VirtualizedCommandList,
   CommandEmpty,
   CommandGroup,
   CommandItem,
