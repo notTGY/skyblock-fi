@@ -40,66 +40,87 @@ export default function DashboardPage() {
   const [availableLabels, setAvailableLabels] = useState<Label[]>([]);
   const [_loading, setLoading] = useState(false);
 
-  // Mock data for demonstration
+  // Fetch real data from APIs
   useEffect(() => {
-    // In production, fetch from API
-    const mockLabels: Label[] = [
-      { id: 1, name: "Commodities", color: "#10b981" },
-      { id: 2, name: "Goods", color: "#3b82f6" },
-      { id: 3, name: "Materials", color: "#f59e0b" },
-      { id: 4, name: "Consumables", color: "#ef4444" },
-      { id: 5, name: "Rare", color: "#8b5cf6" },
-      { id: 6, name: "Volatile", color: "#ec4899" },
-    ];
-    setAvailableLabels(mockLabels);
+    const fetchData = async () => {
+      try {
+        // Fetch bazaar data to get all items
+        const bazaarResponse = await fetch("/api/bazaar");
+        const bazaarData = await bazaarResponse.json();
 
-    const mockItems: Item[] = [
-      {
-        id: "ENCHANTED_DIAMOND",
-        name: "Enchanted Diamond",
-        labels: [{ id: 1, name: "Commodities", color: "#10b981" }],
-      },
-      {
-        id: "ENCHANTED_GOLD",
-        name: "Enchanted Gold",
-        labels: [{ id: 1, name: "Commodities", color: "#10b981" }],
-      },
-      {
-        id: "ENCHANTED_IRON",
-        name: "Enchanted Iron",
-        labels: [{ id: 2, name: "Goods", color: "#3b82f6" }],
-      },
-      {
-        id: "WHEAT",
-        name: "Wheat",
-        labels: [{ id: 3, name: "Materials", color: "#f59e0b" }],
-      },
-      {
-        id: "CARROT",
-        name: "Carrot",
-        labels: [{ id: 3, name: "Materials", color: "#f59e0b" }],
-      },
-    ];
-    setItems(mockItems);
+        if (bazaarData.success) {
+          const productIds = Object.keys(bazaarData.products);
+          const fetchedItems: Item[] = productIds.map((id) => ({
+            id,
+            name: id
+              .replace(/_/g, " ")
+              .toLowerCase()
+              .replace(/\b\w/g, (l) => l.toUpperCase()),
+          }));
+          setItems(fetchedItems);
+        }
+
+        // Fetch labels
+        const labelsResponse = await fetch("/api/labels");
+        const labelsData = await labelsResponse.json();
+        if (Array.isArray(labelsData)) {
+          setAvailableLabels(labelsData);
+        } else {
+          console.error("Failed to fetch labels:", labelsData);
+        }
+      } catch (error) {
+        console.error("Error fetching data:", error);
+      }
+    };
+
+    fetchData();
   }, []);
 
   useEffect(() => {
     if (selectedItem) {
       setLoading(true);
-      // Mock price data
-      const mockPrices: PriceData[] = Array.from({ length: 24 }, (_, i) => ({
-        timestamp: new Date(Date.now() - (23 - i) * 3600000).toISOString(),
-        buy_price: 1000 + Math.random() * 200,
-        sell_price: 1100 + Math.random() * 200,
-        buy_orders: Math.floor(Math.random() * 100),
-        sell_orders: Math.floor(Math.random() * 100),
-        buy_volume: Math.floor(Math.random() * 10000),
-        sell_volume: Math.floor(Math.random() * 10000),
-      }));
-      setPriceData(mockPrices);
-      setLoading(false);
+      // Ensure item is in database
+      const currentItem = items.find((item) => item.id === selectedItem);
+      if (currentItem) {
+        fetch("/api/items", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ id: currentItem.id, name: currentItem.name }),
+        }).catch((error) => console.error("Error adding item to db:", error));
+      }
+
+      // Fetch real price data from bazaar API
+      fetch("/api/bazaar")
+        .then((response) => response.json())
+        .then((data) => {
+          if (data.success && data.products[selectedItem]) {
+            const quickStatus = data.products[selectedItem].quick_status;
+            // Generate mock historical data based on current prices
+            const baseBuyPrice = quickStatus.buyPrice;
+            const baseSellPrice = quickStatus.sellPrice;
+            const mockPrices: PriceData[] = Array.from(
+              { length: 24 },
+              (_, i) => ({
+                timestamp: new Date(
+                  Date.now() - (23 - i) * 3600000,
+                ).toISOString(),
+                buy_price:
+                  baseBuyPrice + (Math.random() - 0.5) * baseBuyPrice * 0.1,
+                sell_price:
+                  baseSellPrice + (Math.random() - 0.5) * baseSellPrice * 0.1,
+                buy_orders: quickStatus.buyOrders,
+                sell_orders: quickStatus.sellOrders,
+                buy_volume: quickStatus.buyVolume,
+                sell_volume: quickStatus.sellVolume,
+              }),
+            );
+            setPriceData(mockPrices);
+          }
+        })
+        .catch((error) => console.error("Error fetching price data:", error))
+        .finally(() => setLoading(false));
     }
-  }, [selectedItem]);
+  }, [selectedItem, items]);
 
   const handleAddLabel = (labelId: number) => {
     if (!selectedItem) return;
