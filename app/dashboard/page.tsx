@@ -188,15 +188,17 @@ export default function DashboardPage() {
       <NavHeader />
       <div className="flex flex-1">
         <DashboardSidebar />
-        <main className="flex-1 p-3 overflow-auto">
-          <div className="mb-3">
-            <h1 className="text-lg font-bold mb-1">Bazaar Terminal</h1>
-            <p className="text-[10px] text-muted-foreground">
-              Real-time market data and order book analytics
+        <main className="flex-1 p-2 overflow-auto">
+          <div className="mb-2">
+            <h1 className="text-sm font-semibold mb-1 uppercase tracking-wide">
+              Bazaar Terminal
+            </h1>
+            <p className="text-[9px] text-muted-foreground">
+              Real-time market data & analytics
             </p>
           </div>
 
-          <div className="mb-3">
+          <div className="mb-2">
             <ItemSelector
               items={items}
               selectedItem={selectedItem}
@@ -205,9 +207,9 @@ export default function DashboardPage() {
           </div>
 
           {selectedItem && currentItem ? (
-            <div className="space-y-3">
+            <div className="space-y-2">
               <div>
-                <h2 className="text-base font-semibold mb-2">
+                <h2 className="text-sm font-semibold mb-1 uppercase tracking-wide">
                   {currentItem.name}
                 </h2>
                 <LabelManager
@@ -219,7 +221,7 @@ export default function DashboardPage() {
                 />
               </div>
 
-              <div className="grid grid-cols-6 gap-2">
+              <div className="grid grid-cols-6 gap-1">
                 <StatCard
                   label="BUY PRICE"
                   value={
@@ -252,17 +254,17 @@ export default function DashboardPage() {
                 />
               </div>
 
-              <div className="grid grid-cols-2 gap-2">
+              <div className="grid grid-cols-2 gap-1">
                 <PriceChart data={priceData} title="Price History (24h)" />
-                <div className="space-y-2">
+                <div className="space-y-1">
                   <VolumeChart data={priceData} title="Trading Volume" />
                   <SpreadChart data={priceData} title="Spread Analysis" />
                 </div>
               </div>
 
-              <div className="grid grid-cols-2 gap-2">
-                <Card className="p-3">
-                  <h3 className="text-xs font-semibold mb-2">
+              <div className="grid grid-cols-2 gap-1">
+                <Card className="p-2">
+                  <h3 className="text-[10px] font-semibold mb-1 uppercase tracking-wide">
                     Order Book Summary
                   </h3>
                   <div className="space-y-1.5 text-[11px]">
@@ -307,8 +309,10 @@ export default function DashboardPage() {
                   </div>
                 </Card>
 
-                <Card className="p-3">
-                  <h3 className="text-xs font-semibold mb-2">Market Metrics</h3>
+                <Card className="p-2">
+                  <h3 className="text-[10px] font-semibold mb-1 uppercase tracking-wide">
+                    Market Metrics
+                  </h3>
                   <div className="space-y-1.5 text-[11px]">
                     <div className="flex justify-between">
                       <span className="text-muted-foreground">24h High</span>
@@ -340,8 +344,8 @@ export default function DashboardPage() {
                 </Card>
               </div>
 
-              <Card className="p-3">
-                <h3 className="text-xs font-semibold mb-2">
+              <Card className="p-2">
+                <h3 className="text-[10px] font-semibold mb-1 uppercase tracking-wide">
                   Recent Transactions
                 </h3>
                 <div className="space-y-1">
@@ -387,8 +391,8 @@ export default function DashboardPage() {
               </Card>
             </div>
           ) : (
-            <Card className="p-8 text-center">
-              <p className="text-sm text-muted-foreground">
+            <Card className="p-4 text-center">
+              <p className="text-xs text-muted-foreground uppercase tracking-wide">
                 Select an item to view market data
               </p>
             </Card>
