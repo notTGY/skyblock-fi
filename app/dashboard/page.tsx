@@ -1,5 +1,6 @@
 "use client";
 
+import { useQuery } from "@tanstack/react-query";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import { DashboardSidebar } from "@/components/dashboard-sidebar";
@@ -7,6 +8,7 @@ import { ItemSelector } from "@/components/item-selector";
 import { LabelManager } from "@/components/label-manager";
 import { NavHeader } from "@/components/nav-header";
 import { PriceChart } from "@/components/price-chart";
+import { RefetchIntervalSelector } from "@/components/refetch-interval-selector";
 import { SpreadChart } from "@/components/spread-chart";
 import { StatCard } from "@/components/stat-card";
 import { Card } from "@/components/ui/card";
@@ -51,45 +53,52 @@ export default function DashboardPage() {
   const [_loading, setLoading] = useState(false);
   const [commandOpen, setCommandOpen] = useState(false);
   const [itemsLoading, setItemsLoading] = useState(true);
+  const [refetchInterval, setRefetchInterval] = useState(60 * 1000); // 1 minute default
   const router = useRouter();
 
-  // Fetch real data from APIs
+  // Fetch bazaar data
+  const { data: bazaarData } = useQuery({
+    queryKey: ["bazaar"],
+    queryFn: async () => {
+      const response = await fetch("/api/bazaar");
+      return response.json();
+    },
+    refetchInterval: 5 * 60 * 1000, // 5 minutes for items
+  });
+
+  // Fetch labels
+  const { data: labelsData } = useQuery({
+    queryKey: ["labels"],
+    queryFn: async () => {
+      const response = await fetch("/api/labels");
+      return response.json();
+    },
+    refetchInterval: 10 * 60 * 1000, // 10 minutes for labels
+  });
+
+  // Process items and labels
   useEffect(() => {
-    const fetchData = async () => {
-      try {
-        // Fetch bazaar data to get all items
-        const bazaarResponse = await fetch("/api/bazaar");
-        const bazaarData = await bazaarResponse.json();
+    if (bazaarData?.success) {
+      const productIds = Object.keys(bazaarData.products);
+      const fetchedItems: Item[] = productIds.map((id) => ({
+        id,
+        name: id
+          .replace(/_/g, " ")
+          .toLowerCase()
+          .replace(/\b\w/g, (l) => l.toUpperCase()),
+      }));
+      setItems(fetchedItems);
+      setItemsLoading(false);
+    }
+  }, [bazaarData]);
 
-        if (bazaarData.success) {
-          const productIds = Object.keys(bazaarData.products);
-          const fetchedItems: Item[] = productIds.map((id) => ({
-            id,
-            name: id
-              .replace(/_/g, " ")
-              .toLowerCase()
-              .replace(/\b\w/g, (l) => l.toUpperCase()),
-          }));
-          setItems(fetchedItems);
-        }
-        setItemsLoading(false);
-
-        // Fetch labels
-        const labelsResponse = await fetch("/api/labels");
-        const labelsData = await labelsResponse.json();
-        if (Array.isArray(labelsData)) {
-          setAvailableLabels(labelsData);
-        } else {
-          console.error("Failed to fetch labels:", labelsData);
-        }
-      } catch (error) {
-        console.error("Error fetching data:", error);
-        setItemsLoading(false);
-      }
-    };
-
-    fetchData();
-  }, []);
+  useEffect(() => {
+    if (Array.isArray(labelsData)) {
+      setAvailableLabels(labelsData);
+    } else if (labelsData) {
+      console.error("Failed to fetch labels:", labelsData);
+    }
+  }, [labelsData]);
 
   useEffect(() => {
     const handleKeyDown = (event: KeyboardEvent) => {
@@ -124,10 +133,47 @@ export default function DashboardPage() {
     return () => window.removeEventListener("keydown", handleKeyDown);
   }, [router]);
 
+  // Fetch price data for selected item
+  const { data: priceQueryData } = useQuery({
+    queryKey: ["priceData", selectedItem],
+    queryFn: async () => {
+      if (!selectedItem) return null;
+      const response = await fetch("/api/bazaar");
+      const data = await response.json();
+      return data;
+    },
+    enabled: !!selectedItem,
+    refetchInterval: refetchInterval > 0 ? refetchInterval : false,
+  });
+
+  // Process price data
+  useEffect(() => {
+    if (
+      selectedItem &&
+      priceQueryData?.success &&
+      priceQueryData.products[selectedItem]
+    ) {
+      const quickStatus = priceQueryData.products[selectedItem].quick_status;
+      // Generate mock historical data based on current prices
+      const baseBuyPrice = quickStatus.buyPrice;
+      const baseSellPrice = quickStatus.sellPrice;
+      const mockPrices: PriceData[] = Array.from({ length: 24 }, (_, i) => ({
+        timestamp: new Date(Date.now() - (23 - i) * 3600000).toISOString(),
+        buy_price: baseBuyPrice + (Math.random() - 0.5) * baseBuyPrice * 0.1,
+        sell_price: baseSellPrice + (Math.random() - 0.5) * baseSellPrice * 0.1,
+        buy_orders: quickStatus.buyOrders,
+        sell_orders: quickStatus.sellOrders,
+        buy_volume: quickStatus.buyVolume,
+        sell_volume: quickStatus.sellVolume,
+      }));
+      setPriceData(mockPrices);
+      setLoading(false);
+    }
+  }, [selectedItem, priceQueryData]);
+
+  // Ensure item is in database when selected
   useEffect(() => {
     if (selectedItem) {
-      setLoading(true);
-      // Ensure item is in database
       const currentItem = items.find((item) => item.id === selectedItem);
       if (currentItem) {
         fetch("/api/items", {
@@ -136,37 +182,6 @@ export default function DashboardPage() {
           body: JSON.stringify({ id: currentItem.id, name: currentItem.name }),
         }).catch((error) => console.error("Error adding item to db:", error));
       }
-
-      // Fetch real price data from bazaar API
-      fetch("/api/bazaar")
-        .then((response) => response.json())
-        .then((data) => {
-          if (data.success && data.products[selectedItem]) {
-            const quickStatus = data.products[selectedItem].quick_status;
-            // Generate mock historical data based on current prices
-            const baseBuyPrice = quickStatus.buyPrice;
-            const baseSellPrice = quickStatus.sellPrice;
-            const mockPrices: PriceData[] = Array.from(
-              { length: 24 },
-              (_, i) => ({
-                timestamp: new Date(
-                  Date.now() - (23 - i) * 3600000,
-                ).toISOString(),
-                buy_price:
-                  baseBuyPrice + (Math.random() - 0.5) * baseBuyPrice * 0.1,
-                sell_price:
-                  baseSellPrice + (Math.random() - 0.5) * baseSellPrice * 0.1,
-                buy_orders: quickStatus.buyOrders,
-                sell_orders: quickStatus.sellOrders,
-                buy_volume: quickStatus.buyVolume,
-                sell_volume: quickStatus.sellVolume,
-              }),
-            );
-            setPriceData(mockPrices);
-          }
-        })
-        .catch((error) => console.error("Error fetching price data:", error))
-        .finally(() => setLoading(false));
     }
   }, [selectedItem, items]);
 
@@ -246,12 +261,18 @@ export default function DashboardPage() {
             </p>
           </div>
 
-          <div className="mb-2">
-            <ItemSelector
-              items={items}
-              selectedItem={selectedItem}
-              onSelectItem={setSelectedItem}
-              loading={itemsLoading}
+          <div className="mb-2 flex gap-2">
+            <div className="flex-1">
+              <ItemSelector
+                items={items}
+                selectedItem={selectedItem}
+                onSelectItem={setSelectedItem}
+                loading={itemsLoading}
+              />
+            </div>
+            <RefetchIntervalSelector
+              value={refetchInterval}
+              onChange={setRefetchInterval}
             />
           </div>
 
