@@ -1,8 +1,9 @@
 "use client";
 
 import { useQuery } from "@tanstack/react-query";
+import Fuse from "fuse.js";
 import { useRouter } from "next/navigation";
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 
 import { DashboardSidebar } from "@/components/dashboard-sidebar";
 import { NavHeader } from "@/components/nav-header";
@@ -41,7 +42,11 @@ export default function DashboardPage() {
   const [items, setItems] = useState<Item[]>([]);
   const [commandOpen, setCommandOpen] = useState(false);
   const [search, setSearch] = useState("");
+  const [selectedIndex, setSelectedIndex] = useState(-1);
   const router = useRouter();
+  const tableRef = useRef<HTMLTableElement>(null);
+
+  const fuse = useMemo(() => new Fuse(items, { keys: ["name"], threshold: 0.3 }), [items]);
 
   // Fetch bazaar data
   const { data: bazaarData } = useQuery({
@@ -68,9 +73,25 @@ export default function DashboardPage() {
     }
   }, [bazaarData]);
 
-  const filteredItems = items.filter((item) =>
-    item.name.toLowerCase().includes(search.toLowerCase()),
-  );
+  const filteredItems = search ? fuse.search(search).map(result => result.item) : items;
+
+  // Reset selected index when search changes
+  useEffect(() => {
+    setSelectedIndex(-1);
+  }, [search]);
+
+  // Scroll selected row into view
+  useEffect(() => {
+    if (selectedIndex >= 0 && tableRef.current) {
+      const rows = tableRef.current.querySelectorAll("tbody tr");
+      if (rows[selectedIndex]) {
+        rows[selectedIndex].scrollIntoView({
+          behavior: "smooth",
+          block: "nearest",
+        });
+      }
+    }
+  }, [selectedIndex]);
 
   const isLoading = !bazaarData || items.length === 0;
 
@@ -128,6 +149,23 @@ export default function DashboardPage() {
               placeholder="Search items..."
               value={search}
               onChange={(e) => setSearch(e.target.value)}
+              onKeyDown={(e) => {
+                if (filteredItems.length === 0) return;
+
+                if (e.key === "ArrowDown") {
+                  e.preventDefault();
+                  setSelectedIndex((prev) => Math.min(prev + 1, filteredItems.length - 1));
+                } else if (e.key === "ArrowUp") {
+                  e.preventDefault();
+                  setSelectedIndex((prev) => prev > 0 ? prev - 1 : -1);
+                } else if (e.key === "Enter") {
+                  e.preventDefault();
+                  const index = selectedIndex >= 0 ? selectedIndex : 0;
+                  if (filteredItems[index]) {
+                    router.push(`/dashboard/${filteredItems[index].id}`);
+                  }
+                }
+              }}
               className="h-8 text-xs"
               autoFocus
             />
@@ -153,29 +191,27 @@ export default function DashboardPage() {
                 </EmptyHeader>
               </Empty>
             ) : (
-              <Table>
+              <Table ref={tableRef}>
                 <TableHeader>
                   <TableRow>
                     <TableHead className="text-left">Item</TableHead>
                     <TableHead className="text-right">Buy Price</TableHead>
                     <TableHead className="text-right">Sell Price</TableHead>
-                    <TableHead className="text-right">24h Change</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
-                  {filteredItems.map((item) => {
+                  {filteredItems.map((item, index) => {
                     const product = bazaarData?.products[item.id];
                     if (!product) return null;
                     const quickStatus = product.quick_status;
                     const buyPrice = quickStatus.buyPrice;
                     const sellPrice = quickStatus.sellPrice;
-                    // Mock 24h change
-                    const change = (Math.random() - 0.5) * 10;
+                    const isSelected = index === selectedIndex;
                     return (
                       <TableRow
                         key={item.id}
                         onClick={() => router.push(`/dashboard/${item.id}`)}
-                        className="cursor-pointer"
+                        className={`cursor-pointer ${isSelected ? "bg-accent" : ""}`}
                       >
                         <TableCell>{item.name}</TableCell>
                         <TableCell className="text-right font-mono">
@@ -183,12 +219,6 @@ export default function DashboardPage() {
                         </TableCell>
                         <TableCell className="text-right font-mono">
                           {sellPrice.toFixed(1)}
-                        </TableCell>
-                        <TableCell
-                          className={`text-right font-mono ${change >= 0 ? "text-green-500" : "text-red-500"}`}
-                        >
-                          {change >= 0 ? "+" : ""}
-                          {change.toFixed(2)}%
                         </TableCell>
                       </TableRow>
                     );
