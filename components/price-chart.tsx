@@ -56,8 +56,10 @@ export function PriceChart({ data, title }: PriceChartProps) {
           <div className="text-muted-foreground mb-1">
             {payload[0].payload.time}
           </div>
-          <div className="text-chart-1">Buy: {payload[0].value.toFixed(2)}</div>
-          <div className="text-chart-2">
+          <div style={{ color: "#4A9EFF" }}>
+            Buy: {payload[0].value.toFixed(2)}
+          </div>
+          <div style={{ color: "#00BFAE" }}>
             Sell: {payload[1].value.toFixed(2)}
           </div>
           <div className="text-muted-foreground">
@@ -87,18 +89,14 @@ export function PriceChart({ data, title }: PriceChartProps) {
               <stop offset="95%" stopColor="#00BFAE" stopOpacity={0} />
             </linearGradient>
           </defs>
-          <CartesianGrid
-            strokeDasharray="3 3"
-            stroke="hsl(var(--border))"
-            opacity={0.3}
-          />
+          <CartesianGrid strokeDasharray="3 3" stroke="#3F3F46" opacity={0.3} />
           <XAxis
             dataKey="time"
-            tick={{ fontSize: 9, fill: "hsl(var(--muted-foreground))" }}
+            tick={{ fontSize: 9, fill: "#9CA3AF" }}
             tickLine={false}
           />
           <YAxis
-            tick={{ fontSize: 9, fill: "hsl(var(--muted-foreground))" }}
+            tick={{ fontSize: 9, fill: "#9CA3AF" }}
             tickLine={false}
             width={40}
           />
@@ -123,11 +121,11 @@ export function PriceChart({ data, title }: PriceChartProps) {
       </ResponsiveContainer>
       <div className="flex gap-4 mt-2 text-[10px]">
         <div className="flex items-center gap-1.5">
-          <div className="w-2 h-2 rounded-full bg-chart-1" />
+          <div className="w-2 h-2 rounded-full bg-[#4A9EFF]" />
           <span className="text-muted-foreground">Buy Price</span>
         </div>
         <div className="flex items-center gap-1.5">
-          <div className="w-2 h-2 rounded-full bg-chart-2" />
+          <div className="w-2 h-2 rounded-full bg-[#00BFAE]" />
           <span className="text-muted-foreground">Sell Price</span>
         </div>
       </div>
