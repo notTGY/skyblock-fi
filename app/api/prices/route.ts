@@ -5,7 +5,7 @@ export async function GET(request: Request) {
   try {
     const { searchParams } = new URL(request.url);
     const itemId = searchParams.get("itemId");
-    const hours = Number.parseInt(searchParams.get("hours") || "24");
+    const hours = Number.parseInt(searchParams.get("hours") || "24", 10);
 
     if (!itemId) {
       return NextResponse.json({ error: "itemId required" }, { status: 400 });

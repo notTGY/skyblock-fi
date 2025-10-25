@@ -33,7 +33,7 @@ interface LabelManagerProps {
 }
 
 export function LabelManager({
-  itemId,
+  itemId: _itemId,
   currentLabels,
   availableLabels,
   onAddLabel,
@@ -58,6 +58,7 @@ export function LabelManager({
           <button
             onClick={() => onRemoveLabel(label.id)}
             className="hover:bg-secondary rounded-sm p-0.5 transition-colors"
+            type="button"
           >
             <X className="h-2.5 w-2.5" />
           </button>

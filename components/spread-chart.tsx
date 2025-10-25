@@ -35,7 +35,7 @@ export function SpreadChart({ data, title }: SpreadChartProps) {
     }));
   }, [data]);
 
-  const CustomTooltip = ({ active, payload }: any) => {
+  const CustomTooltip = ({ active, payload }: Object) => {
     if (active && payload && payload.length) {
       return (
         <div className="bg-card border border-border p-2 text-[10px] font-mono">

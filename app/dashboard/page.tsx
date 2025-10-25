@@ -38,7 +38,7 @@ export default function DashboardPage() {
   const [selectedItem, setSelectedItem] = useState<string | null>(null);
   const [priceData, setPriceData] = useState<PriceData[]>([]);
   const [availableLabels, setAvailableLabels] = useState<Label[]>([]);
-  const [loading, setLoading] = useState(false);
+  const [_loading, setLoading] = useState(false);
 
   // Mock data for demonstration
   useEffect(() => {
@@ -330,34 +330,38 @@ export default function DashboardPage() {
                     <div className="text-right">PRICE</div>
                     <div className="text-right">AMOUNT</div>
                   </div>
-                  {[...Array(8)].map((_, i) => (
-                    <div
-                      key={i}
-                      className="grid grid-cols-4 gap-2 text-[11px] font-mono"
-                    >
-                      <div className="text-muted-foreground">
-                        {new Date(Date.now() - i * 30000).toLocaleTimeString()}
-                      </div>
+                  {[...Array(8)]
+                    .map((_, i) => i)
+                    .map((i) => (
                       <div
-                        className={
-                          i % 2 === 0 ? "text-chart-3" : "text-destructive"
-                        }
+                        key={i}
+                        className="grid grid-cols-4 gap-2 text-[11px] font-mono"
                       >
-                        {i % 2 === 0 ? "BUY" : "SELL"}
+                        <div className="text-muted-foreground">
+                          {new Date(
+                            Date.now() - i * 30000,
+                          ).toLocaleTimeString()}
+                        </div>
+                        <div
+                          className={
+                            i % 2 === 0 ? "text-chart-3" : "text-destructive"
+                          }
+                        >
+                          {i % 2 === 0 ? "BUY" : "SELL"}
+                        </div>
+                        <div className="text-right">
+                          {latestPrice
+                            ? (
+                                latestPrice.buy_price +
+                                Math.random() * 50
+                              ).toFixed(1)
+                            : "—"}
+                        </div>
+                        <div className="text-right">
+                          {Math.floor(Math.random() * 100)}
+                        </div>
                       </div>
-                      <div className="text-right">
-                        {latestPrice
-                          ? (
-                              latestPrice.buy_price +
-                              Math.random() * 50
-                            ).toFixed(1)
-                          : "—"}
-                      </div>
-                      <div className="text-right">
-                        {Math.floor(Math.random() * 100)}
-                      </div>
-                    </div>
-                  ))}
+                    ))}
                 </div>
               </Card>
             </div>
